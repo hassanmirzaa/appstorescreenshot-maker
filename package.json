@@ -1,0 +1,16 @@
+{
+  "name": "screenshot-studio",
+  "version": "1.1.0",
+  "description": "Internal tool for generating iOS / Android app store screenshots with device frames.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "postinstall": "playwright install chromium"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "multer": "^1.4.5-lts.1",
+    "playwright": "^1.47.0",
+    "archiver": "^7.0.1"
+  }
+}

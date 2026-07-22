@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>render</title>
+<style>
+  html, body { margin:0; padding:0; overflow:hidden; }
+  * { box-sizing: border-box; }
+  #stage { position:relative; overflow:hidden; }
+  #textBlock {
+    position:absolute; left:0; right:0; text-align:center;
+    display:flex; flex-direction:column; align-items:center;
+  }
+  #title { margin:0; font-weight:800; line-height:1.08; }
+  #subtitle { margin:0; font-weight:500; line-height:1.35; }
+  #phoneWrap { position:absolute; left:50%; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="textBlock">
+    <h1 id="title"></h1>
+    <p id="subtitle"></p>
+  </div>
+  <div id="phoneWrap"><div id="phone"></div></div>
+</div>
+<script src="/deviceFrame.js"></script>
+<script>
+function getData() {
+  const raw = location.hash.slice(1);
+  if (!raw) return null;
+  try { return JSON.parse(decodeURIComponent(raw)); } catch (e) { return null; }
+}
+
+function loadFont(family) {
+  return new Promise((resolve) => {
+    if (!family || family === "System") return resolve();
+    const id = "gf-" + family.replace(/\s+/g, "-");
+    if (document.getElementById(id)) return resolve();
+    const link = document.createElement("link");
+    link.id = id;
+    link.rel = "stylesheet";
+    link.href = "https://fonts.googleapis.com/css2?family=" +
+      encodeURIComponent(family) + ":wght@400;500;600;700;800;900&display=swap";
+    link.onload = () => resolve();
+    link.onerror = () => resolve();
+    document.head.appendChild(link);
+  });
+}
+
+function waitForImages(container) {
+  const imgs = Array.from(container.querySelectorAll("img"));
+  return Promise.all(imgs.map((img) => {
+    if (img.complete && img.naturalWidth > 0) return Promise.resolve();
+    return new Promise((res) => { img.onload = res; img.onerror = res; });
+  }));
+}
+
+async function render() {
+  const data = getData();
+  if (!data) {
+    document.body.innerHTML = "<pre>No slide data supplied.</pre>";
+    window.__RENDER_READY__ = true;
+    return;
+  }
+
+  const {
+    width, height, platform,
+    title = "", subtitle = "",
+    fontFamily = "Inter",
+    titleColor = "#ffffff",
+    subtitleColor = "rgba(255,255,255,0.72)",
+    titleSize, subtitleSize,
+    background = { type: "gradient", color1: "#1b2559", color2: "#0b1024", angle: 160 },
+    screenshotUrl = "",
+    fit = "cover",
+    bezelUrl = "",
+    textTopRatio = 0.065,
+    phoneTopRatio = 0.30,
+    phoneWidthRatio = 0.72,
+    deviceZoom = 1,
+    deviceX = 0,
+    deviceY = 0,
+  } = data;
+
+  const stage = document.getElementById("stage");
+  stage.style.width = width + "px";
+  stage.style.height = height + "px";
+
+  stage.style.background = background.type === "solid"
+    ? background.color1
+    : `linear-gradient(${background.angle || 160}deg, ${background.color1}, ${background.color2})`;
+
+  await loadFont(fontFamily);
+
+  const titleEl = document.getElementById("title");
+  const subEl = document.getElementById("subtitle");
+  titleEl.textContent = title;
+  subEl.textContent = subtitle;
+  titleEl.style.fontFamily = `"${fontFamily}", sans-serif`;
+  subEl.style.fontFamily = `"${fontFamily}", sans-serif`;
+  titleEl.style.color = titleColor;
+  subEl.style.color = subtitleColor;
+  titleEl.style.fontSize = (titleSize || width * 0.078) + "px";
+  subEl.style.fontSize = (subtitleSize || width * 0.032) + "px";
+
+  const textBlock = document.getElementById("textBlock");
+  textBlock.style.top = height * textTopRatio + "px";
+  textBlock.style.padding = `0 ${width * 0.07}px`;
+  textBlock.style.gap = (height * 0.014) + "px";
+
+  const phoneW = width * phoneWidthRatio * (deviceZoom || 1);
+  const deviceAspect = 2778 / 1284;
+  const finalPhoneH = phoneW * deviceAspect;
+
+  const phoneWrap = document.getElementById("phoneWrap");
+  phoneWrap.style.top = (height * phoneTopRatio + (deviceY || 0)) + "px";
+  phoneWrap.style.width = phoneW + "px";
+  phoneWrap.style.marginLeft = (-phoneW / 2 + (deviceX || 0)) + "px";
+
+  const phoneEl = document.getElementById("phone");
+  await renderDeviceFrame(phoneEl, {
+    platform: platform === "android" ? "android" : "ios",
+    width: phoneW,
+    height: finalPhoneH,
+    screenshotUrl,
+    fit,
+    bezelUrl,
+  });
+
+  await waitForImages(phoneEl);
+  if (document.fonts && document.fonts.ready) {
+    try { await document.fonts.ready; } catch (e) {}
+  }
+
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    window.__RENDER_READY__ = true;
+  }));
+}
+
+render();
+</script>
+</body>
+</html>

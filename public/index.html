@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Screenshot Studio</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<div id="app">
+
+  <header id="topbar">
+    <div class="brand">Screenshot Studio</div>
+    <div id="modeSwitch" class="mode-switch">
+      <button class="mode-btn active" data-mode="screens">Screenshots</button>
+      <button class="mode-btn" data-mode="banner">Play Store Banner</button>
+    </div>
+    <div class="topbar-actions">
+      <button id="exportCurrentBtn" class="btn ghost">Export current PNG</button>
+      <button id="exportAllBtn" class="btn primary">Export all as ZIP</button>
+      <button id="exportBannerBtn" class="btn primary" style="display:none">Export banner PNG</button>
+    </div>
+  </header>
+
+  <div id="main">
+
+    <aside id="sidebar">
+
+     <div id="screenshotControls">
+      <section class="panel">
+        <h3>Platform &amp; size</h3>
+        <div class="row seg">
+          <button class="seg-btn active" data-platform="ios">iOS</button>
+          <button class="seg-btn" data-platform="android">Android</button>
+        </div>
+        <div class="row two-col">
+          <label>Width<input type="number" id="widthInput" /></label>
+          <label>Height<input type="number" id="heightInput" /></label>
+        </div>
+        <div class="row preset-row">
+          <button class="btn tiny ghost" id="presetIosBtn">iOS default (1284×2778)</button>
+          <button class="btn tiny ghost" id="presetAndroidBtn">Android default (941×1672)</button>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h3>Text</h3>
+        <label>Title
+          <input type="text" id="titleInput" placeholder="Dashboard Overview" />
+        </label>
+        <label>Subtitle
+          <textarea id="subtitleInput" rows="2" placeholder="Track projects, progress, and department status at a glance"></textarea>
+        </label>
+        <label>Font family
+          <select id="fontSelect"></select>
+        </label>
+        <div class="row two-col">
+          <label>Title color<input type="color" id="titleColorInput" value="#ffffff" /></label>
+          <label>Subtitle color<input type="color" id="subtitleColorInput" value="#c7cbe0" /></label>
+        </div>
+        <div class="row two-col">
+          <label>Title size (px)<input type="number" id="titleSizeInput" /></label>
+          <label>Subtitle size (px)<input type="number" id="subtitleSizeInput" /></label>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h3>Background</h3>
+        <div class="row seg">
+          <button class="seg-btn active" data-bgtype="gradient">Gradient</button>
+          <button class="seg-btn" data-bgtype="solid">Solid</button>
+        </div>
+        <div class="row two-col">
+          <label>Color 1<input type="color" id="bgColor1Input" value="#1b2559" /></label>
+          <label id="bgColor2Row">Color 2<input type="color" id="bgColor2Input" value="#0b1024" /></label>
+        </div>
+        <label id="bgAngleRow">Gradient angle
+          <input type="range" id="bgAngleInput" min="0" max="360" value="160" />
+        </label>
+      </section>
+
+      <section class="panel">
+        <h3>Screenshot</h3>
+        <label class="upload-drop" id="uploadDrop">
+          <span id="uploadLabel">Click to upload / swap screenshot</span>
+          <input type="file" id="screenshotInput" accept="image/*" hidden />
+        </label>
+        <div class="row seg">
+          <button class="seg-btn active" data-fit="cover">Fill (crop)</button>
+          <button class="seg-btn" data-fit="contain">Fit (no crop)</button>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h3>Device position</h3>
+        <label>Zoom <span id="zoomVal" class="range-val">100%</span>
+          <input type="range" id="deviceZoom" min="0.4" max="1.6" step="0.01" value="1" />
+        </label>
+        <label>Horizontal <span id="deviceXVal" class="range-val">0</span>
+          <input type="range" id="deviceX" min="-600" max="600" step="1" value="0" />
+        </label>
+        <label>Vertical <span id="deviceYVal" class="range-val">0</span>
+          <input type="range" id="deviceY" min="-800" max="800" step="1" value="0" />
+        </label>
+        <button class="btn tiny" id="deviceResetBtn">Reset position</button>
+      </section>
+
+      <section class="panel">
+        <h3>Device frame</h3>
+        <div class="row seg">
+          <button class="seg-btn active" data-frametype="procedural">Built-in</button>
+          <button class="seg-btn" data-frametype="real">Real device PNG</button>
+        </div>
+        <div id="bezelUploadRow" style="display:none">
+          <label class="upload-drop" id="bezelUploadDrop">
+            <span id="bezelUploadLabel">Click to upload a bezel PNG</span>
+            <input type="file" id="bezelInput" accept="image/png" hidden />
+          </label>
+          <p class="hint">
+            Use a device PNG with a transparent screen cutout — e.g. Apple's free
+            official bezels (developer.apple.com/design/resources → Product Bezels).
+            The transparent window is detected automatically, no manual alignment.
+          </p>
+        </div>
+      </section>
+     </div><!-- /#screenshotControls -->
+
+     <div id="bannerControls" style="display:none">
+      <section class="panel">
+        <h3>Play Store banner · 1024×500</h3>
+        <p class="hint" style="margin-bottom:12px">
+          Modern feature graphic with 3 device mockups. It automatically uses the
+          <strong>first 3 screenshots</strong> from your Screenshots slides.
+        </p>
+        <label>App name
+          <input type="text" id="bannerAppName" placeholder="Your App" />
+        </label>
+        <label>Tagline
+          <textarea id="bannerTagline" rows="2" placeholder="Everything you need, in one place."></textarea>
+        </label>
+        <label>Font family
+          <select id="bannerFontSelect"></select>
+        </label>
+      </section>
+
+      <section class="panel">
+        <h3>App logo</h3>
+        <label class="upload-drop" id="logoUploadDrop">
+          <span id="logoUploadLabel">Click to upload app logo</span>
+          <input type="file" id="logoInput" accept="image/*" hidden />
+        </label>
+        <p class="hint">Square PNG works best (shown at 96×96, rounded).</p>
+      </section>
+
+      <section class="panel">
+        <h3>Background</h3>
+        <div class="row seg">
+          <button class="seg-btn active" data-bannerbgtype="gradient">Gradient</button>
+          <button class="seg-btn" data-bannerbgtype="solid">Solid</button>
+        </div>
+        <div class="row two-col">
+          <label>Color 1<input type="color" id="bannerBgColor1" value="#4f6df5" /></label>
+          <label id="bannerBgColor2Row">Color 2<input type="color" id="bannerBgColor2" value="#7c3aed" /></label>
+        </div>
+        <label id="bannerBgAngleRow">Gradient angle
+          <input type="range" id="bannerBgAngle" min="0" max="360" value="135" />
+        </label>
+      </section>
+
+      <section class="panel">
+        <h3>Text &amp; logo layout</h3>
+        <p class="hint" style="margin-bottom:12px">Tip: drag the logo, title, or
+          tagline directly on the banner to move them. Use the sliders to resize.</p>
+        <label>Logo zoom <span id="logoScaleVal" class="range-val">100%</span>
+          <input type="range" id="logoScale" min="0.3" max="2.5" step="0.01" value="1" />
+        </label>
+        <label>Title zoom <span id="titleScaleVal" class="range-val">100%</span>
+          <input type="range" id="titleScale" min="0.4" max="2.2" step="0.01" value="1" />
+        </label>
+        <label>Tagline zoom <span id="bodyScaleVal" class="range-val">100%</span>
+          <input type="range" id="bodyScale" min="0.4" max="2.2" step="0.01" value="1" />
+        </label>
+        <button class="btn tiny" id="bannerLayoutResetBtn">Reset layout</button>
+      </section>
+
+      <section class="panel">
+        <h3>Screenshots used</h3>
+        <p class="hint">Pulled live from your slides. Add or reorder slides in
+          Screenshots mode to change what appears here.</p>
+        <div id="bannerShotStatus" class="hint" style="margin-top:8px"></div>
+      </section>
+     </div><!-- /#bannerControls -->
+
+    </aside>
+
+    <main id="canvasArea">
+      <div id="previewViewport">
+        <div id="previewScale">
+          <div id="stage">
+            <div id="textBlock">
+              <h1 id="title"></h1>
+              <p id="subtitle"></p>
+            </div>
+            <div id="phoneWrap"><div id="phone"></div></div>
+          </div>
+        </div>
+      </div>
+      <div id="bannerViewport" style="display:none">
+        <div id="bannerScale">
+          <div id="bannerStage"></div>
+        </div>
+      </div>
+      <div id="dimLabel"></div>
+    </main>
+
+    <aside id="slides">
+      <div class="slides-header">
+        <h3>Slides</h3>
+        <button class="btn tiny primary" id="addSlideBtn">+ Add</button>
+      </div>
+      <div id="slideList"></div>
+    </aside>
+
+  </div>
+</div>
+
+<script src="deviceFrame.js"></script>
+<script src="bannerLayout.js"></script>
+<script src="editor.js"></script>
+</body>
+</html>

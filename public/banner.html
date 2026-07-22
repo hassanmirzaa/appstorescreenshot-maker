@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>banner render</title>
+<style>
+  html, body { margin:0; padding:0; overflow:hidden; }
+  * { box-sizing: border-box; }
+</style>
+</head>
+<body>
+<div id="banner"></div>
+<script src="/deviceFrame.js"></script>
+<script src="/bannerLayout.js"></script>
+<script>
+function getData() {
+  const raw = location.hash.slice(1);
+  if (!raw) return null;
+  try { return JSON.parse(decodeURIComponent(raw)); } catch (e) { return null; }
+}
+
+function loadFont(family) {
+  return new Promise((resolve) => {
+    if (!family || family === "System") return resolve();
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = "https://fonts.googleapis.com/css2?family=" +
+      encodeURIComponent(family) + ":wght@400;500;600;700;800;900&display=swap";
+    link.onload = () => resolve();
+    link.onerror = () => resolve();
+    document.head.appendChild(link);
+  });
+}
+
+function waitForImages(container) {
+  const imgs = Array.from(container.querySelectorAll("img"));
+  return Promise.all(imgs.map((img) => {
+    if (img.complete && img.naturalWidth > 0) return Promise.resolve();
+    return new Promise((res) => { img.onload = res; img.onerror = res; });
+  }));
+}
+
+async function render() {
+  const data = getData();
+  if (!data) {
+    document.body.innerHTML = "<pre>No banner data supplied.</pre>";
+    window.__RENDER_READY__ = true;
+    return;
+  }
+  await loadFont(data.fontFamily || "Inter");
+  await window.buildBanner(document.getElementById("banner"), data);
+  await waitForImages(document.body);
+  if (document.fonts && document.fonts.ready) {
+    try { await document.fonts.ready; } catch (e) {}
+  }
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    window.__RENDER_READY__ = true;
+  }));
+}
+
+render();
+</script>
+</body>
+</html>
