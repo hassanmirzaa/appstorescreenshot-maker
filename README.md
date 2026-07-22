@@ -1,61 +1,41 @@
 # Screenshot Studio
 
-Internal tool for producing App Store / Play Store screenshots: editable title + subtitle,
-swappable font, swappable screenshot per slide, multiple slides, exact-pixel PNG export.
+Generate **App Store / Play Store screenshots** and a **Play Store feature graphic (1024×500)** with device mockups — all in the browser.
 
-## Setup (one time)
+Built with **Next.js (App Router)**. Fully **client-side**: uploads, rendering, and PNG/ZIP export all happen in the browser, so it deploys to **Vercel** (or any static host) with zero server infrastructure.
 
-```
+## Features
+
+- **Screenshots mode** — multiple slides, iOS/Android device frames, title/subtitle, fonts, colors, gradient/solid backgrounds, and per-slide device zoom + position.
+- **Play Store Banner mode** — 1024×500 feature graphic with 3 fanned device mockups (auto-filled from your first 3 screenshots), app logo upload, and draggable + zoomable logo/title/tagline.
+- **Export** — per-screenshot PNG, all screenshots as a ZIP, and the banner PNG — rendered client-side via `html-to-image`.
+
+## Develop
+
+```bash
 npm install
-npx playwright install chromium
+npm run dev        # http://localhost:3000
 ```
 
-## Run
+## Build
 
+```bash
+npm run build
+npm run start
 ```
-npm start
-```
 
-Then open **http://localhost:4173** in your browser.
+## Deploy to Vercel
 
-## Device frames
+1. Push this repo to GitHub/GitLab/Bitbucket.
+2. In Vercel, **New Project → Import** the repo.
+3. Framework preset: **Next.js** (auto-detected). No env vars, no build overrides needed.
+4. Deploy. Done.
 
-There are two frame modes, per slide, under **Device frame** in the left panel:
-
-- **Built-in** — an original, code-drawn bezel (Dynamic Island + buttons for iOS,
-  punch-hole + buttons for Android). No assets needed, works out of the box.
-- **Real device PNG** — drop in an actual device mockup image and it'll be used instead.
-  Free official ones:
-  - **iOS**: developer.apple.com/design/resources → "Product Bezels" section → e.g.
-    iPhone 17 / iPhone 16 (Photoshop + PNG, free, no login). Use the flattened PNG —
-    it ships with a transparent cutout where the screen goes, made for exactly this.
-  - Community Figma files (e.g. "Apple Devices" by Andre Soares) also work if exported
-    as PNG with a transparent screen area.
-  - When using Apple's bezels in anything customer-facing, check Apple's
-    [Marketing Resources and Identity Guidelines](https://developer.apple.com/app-store/marketing/guidelines/#section-products).
-
-  The app scans the PNG's alpha channel to find the transparent window automatically —
-  no manual coordinate tuning. Any bezel PNG with a real alpha cutout works, so this
-  also covers future device models or an Android equivalent you find/make.
-
-## Using it
-
-- Pick iOS or Android at the top of the left panel. Defaults: iOS 1284×2778 (Apple's
-  6.5" screenshot spec, portrait), Android 941×1672. Both are plain number fields, so
-  you can type any custom resolution.
-- Edit the title/subtitle text, pick a font, set colors, pick solid/gradient background.
-- Upload your app screenshot — it fills the phone screen, cropped or fitted per the
-  Fill/Fit toggle.
-- "+ Add" creates another slide (starts as a copy of the current one). Click a
-  thumbnail to edit it, the × to delete it.
-- **Export current PNG** downloads the slide you're viewing. **Export all as ZIP**
-  renders every slide server-side (headless Chromium) at its exact target resolution —
-  this is what guarantees pixel-perfect output regardless of your screen or zoom.
+> No serverless functions, no browser binaries, no file storage — everything runs in the
+> visitor's browser, which is why the old Playwright/Express version failed on Vercel and
+> this one doesn't.
 
 ## Notes
 
-- Everything runs locally; nothing leaves your machine.
-- Uploaded screenshots/bezels live in `public/uploads/` — safe to clear out periodically.
-- If you ever run this inside a locked-down Linux container where the bundled Chromium
-  won't launch, set `PLAYWRIGHT_EXECUTABLE_PATH` to a working Chromium binary before
-  `npm start`. Not needed on a normal Mac/Windows/Linux desktop.
+- The previous Express + Playwright implementation is archived in `legacy/` for reference (not used by the build).
+- Fonts load from Google Fonts; images are handled as in-browser data URLs (never uploaded to any server).
