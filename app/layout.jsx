@@ -6,6 +6,12 @@ export const metadata = {
   description: "Generate App Store / Play Store screenshots and feature graphics.",
 };
 
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+};
+
 // Combined Google Fonts stylesheet for every selectable family.
 const fontsHref =
   "https://fonts.googleapis.com/css2?" +

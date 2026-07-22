@@ -22,9 +22,11 @@ export default function Page() {
   const [banner, setBanner] = useState(DEFAULT_BANNER);
   const [scale, setScale] = useState(0.3);
   const [busy, setBusy] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   const exportRefs = useRef({}); // slide.id -> DOM node
   const bannerExportRef = useRef(null);
+  const canvasRef = useRef(null);
 
   const slide = slides[currentIndex] || slides[0];
 
@@ -52,18 +54,29 @@ export default function Page() {
     setBanner((b) => ({ ...b, [key]: { ...b[key], x, y } }));
   }, []);
 
-  // ---- preview scaling ----
+  // ---- preview scaling (measures the actual canvas area, so it works for any
+  //      layout — desktop 3-column or mobile stacked) ----
   useEffect(() => {
+    const el = canvasRef.current;
+    if (!el) return;
     function recompute() {
       const w = mode === "banner" ? 1024 : slide.width;
       const h = mode === "banner" ? 500 : slide.height;
-      const maxW = window.innerWidth - 300 - 220 - 60;
-      const maxH = window.innerHeight - 56 - 60;
-      setScale(Math.max(0.05, Math.min(maxW / w, maxH / h, 1)));
+      const availW = Math.max(40, el.clientWidth - 40);
+      const availH = Math.max(40, el.clientHeight - 40);
+      setScale(Math.max(0.05, Math.min(availW / w, availH / h, 1)));
+      setIsMobile(window.innerWidth <= 820);
     }
     recompute();
+    const ro = new ResizeObserver(recompute);
+    ro.observe(el);
     window.addEventListener("resize", recompute);
-    return () => window.removeEventListener("resize", recompute);
+    window.addEventListener("orientationchange", recompute);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", recompute);
+      window.removeEventListener("orientationchange", recompute);
+    };
   }, [mode, slide.width, slide.height]);
 
   // ---- top 3 screenshots for the banner ----
@@ -185,7 +198,7 @@ export default function Page() {
         </aside>
 
         {/* ---------- canvas ---------- */}
-        <main id="canvasArea">
+        <main id="canvasArea" ref={canvasRef}>
           <div className="preview-frame" style={{ width: (isBanner ? 1024 : slide.width) * scale, height: (isBanner ? 500 : slide.height) * scale }}>
             <div style={{ transform: `scale(${scale})`, transformOrigin: "top left", position: "absolute", top: 0, left: 0 }}>
               {isBanner ? (
@@ -214,19 +227,21 @@ export default function Page() {
               <h3>Slides</h3>
               <button className="btn tiny primary" onClick={addSlide}>+ Add</button>
             </div>
-            {slides.map((s, i) => (
-              <div key={s.id} className={"slide-card" + (i === currentIndex ? " active" : "")} onClick={() => setCurrentIndex(i)}>
-                {slides.length > 1 && (
-                  <button className="del" onClick={(e) => { e.stopPropagation(); deleteSlide(i); }}>×</button>
-                )}
-                <div className="thumb">
-                  <div className="thumb-inner" style={{ transform: `scale(${172 / s.width})` }}>
-                    <ScreenshotStage slide={s} />
+            <div id="slideList">
+              {slides.map((s, i) => (
+                <div key={s.id} className={"slide-card" + (i === currentIndex ? " active" : "")} onClick={() => setCurrentIndex(i)}>
+                  {slides.length > 1 && (
+                    <button className="del" onClick={(e) => { e.stopPropagation(); deleteSlide(i); }}>×</button>
+                  )}
+                  <div className="thumb">
+                    <div className="thumb-inner" style={{ transform: `scale(${(isMobile ? 80 : 172) / s.width})` }}>
+                      <ScreenshotStage slide={s} />
+                    </div>
                   </div>
+                  <div className="caption">{s.title || "Untitled"}</div>
                 </div>
-                <div className="caption">{s.title || "Untitled"}</div>
-              </div>
-            ))}
+              ))}
+            </div>
           </aside>
         )}
       </div>

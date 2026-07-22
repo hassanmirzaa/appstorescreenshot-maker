@@ -106,3 +106,40 @@ html, body {
 .slide-card .del { position: absolute; top: 4px; right: 4px; width: 20px; height: 20px; border-radius: 50%; border: none; background: rgba(0,0,0,0.6); color: #fff; cursor: pointer; font-size: 12px; line-height: 1; z-index: 2; }
 
 .export-node-host { position: fixed; left: -100000px; top: 0; pointer-events: none; opacity: 1; }
+
+/* ============================ Mobile / tablet ============================ */
+@media (max-width: 820px) {
+  #app { height: 100dvh; }
+
+  #topbar {
+    height: auto; flex: 0 0 auto; flex-wrap: wrap; gap: 8px; padding: 10px 12px;
+  }
+  .brand { font-size: 14px; width: 100%; }
+  .mode-switch { flex: 1 1 auto; }
+  .mode-btn { flex: 1 1 auto; padding: 8px 6px; }
+  .topbar-actions { flex: 1 1 100%; }
+  .topbar-actions .btn { flex: 1 1 auto; }
+
+  #main { flex-direction: column; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+
+  /* preview first so users see the result, then controls, then slides */
+  #canvasArea { order: 1; flex: 0 0 auto; height: 42vh; min-height: 240px; padding: 16px; }
+  #sidebar { order: 3; width: 100%; flex: 0 0 auto; border-right: none; }
+  #slides { order: 2; width: 100%; flex: 0 0 auto; border-left: none; border-bottom: 1px solid #23252d; }
+
+  /* horizontal, swipeable slide strip on mobile */
+  #slideList { display: flex; flex-direction: row; gap: 10px; overflow-x: auto; padding-bottom: 6px; -webkit-overflow-scrolling: touch; }
+  .slide-card { flex: 0 0 96px; min-width: 0; margin-bottom: 0; }
+  .slide-card .caption { max-width: 80px; }
+
+  /* larger touch targets */
+  .panel input[type="text"], .panel textarea, .panel select, .panel input[type="number"] { font-size: 16px; padding: 10px; }
+  .seg-btn { padding: 10px 8px; }
+  .upload-drop { padding: 22px 10px; }
+  .btn { padding: 10px 14px; }
+}
+
+@media (max-width: 480px) {
+  #canvasArea { height: 38vh; }
+  .mode-btn { font-size: 12px; }
+}
